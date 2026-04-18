@@ -335,12 +335,10 @@ app.get("/api/laliga/players/all", async (req, res) => {
       players: allPlayers,
     });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        error: "failed to fetch all laliga players",
-        details: err.message,
-      });
+    res.status(500).json({
+      error: "failed to fetch all laliga players",
+      details: err.message,
+    });
   }
 });
 
@@ -396,4 +394,18 @@ function processApiFootballPlayers(response) {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
+});
+
+// DEBUG — raw API-Football response
+app.get("/api/debug/laliga-players", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://v3.football.api-sports.io/players?league=140&season=2025&page=1",
+      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
