@@ -260,7 +260,7 @@ app.get("/api/laliga/players", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const response = await fetch(
-      `https://v3.football.api-sports.io/players?league=140&season=2024&page=${page}`,
+      `https://v3.football.api-sports.io/players?league=140&season=2025&page=${page}`,
       { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
     );
     const data = await response.json();
@@ -296,7 +296,7 @@ app.get("/api/laliga/players/all", async (req, res) => {
   try {
     // עמוד ראשון
     const firstResponse = await fetch(
-      "https://v3.football.api-sports.io/players?league=140&season=2024&page=1",
+      "https://v3.football.api-sports.io/players?league=140&season=2025&page=1",
       { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
     );
     const firstData = await firstResponse.json();
@@ -316,7 +316,7 @@ app.get("/api/laliga/players/all", async (req, res) => {
     for (let page = 2; page <= totalPages; page++) {
       await new Promise((resolve) => setTimeout(resolve, 250)); // 250ms delay
       const pageResponse = await fetch(
-        `https://v3.football.api-sports.io/players?league=140&season=2024&page=${page}`,
+        `https://v3.football.api-sports.io/players?league=140&season=2025&page=${page}`,
         { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
       );
       const pageData = await pageResponse.json();
@@ -335,10 +335,12 @@ app.get("/api/laliga/players/all", async (req, res) => {
       players: allPlayers,
     });
   } catch (err) {
-    res.status(500).json({
-      error: "failed to fetch all laliga players",
-      details: err.message,
-    });
+    res
+      .status(500)
+      .json({
+        error: "failed to fetch all laliga players",
+        details: err.message,
+      });
   }
 });
 
