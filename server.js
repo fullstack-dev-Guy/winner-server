@@ -480,6 +480,60 @@ function processApiFootballPlayers(response) {
 }
 
 // ===============================
+// 🇫🇷 LIGUE 1 — Matches
+// ===============================
+app.get("/api/ligue1/matches", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://api.football-data.org/v4/competitions/FL1/matches?season=2025",
+      { headers: { "X-Auth-Token": API_KEY } },
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "failed to fetch ligue1 matches" });
+  }
+});
+
+// ===============================
+// 🇫🇷 LIGUE 1 — Standings
+// ===============================
+app.get("/api/ligue1/standings", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://api.football-data.org/v4/competitions/FL1/standings?season=2025",
+      { headers: { "X-Auth-Token": API_KEY } },
+    );
+    const data = await response.json();
+    const total = data?.standings?.find((s) => s.type === "TOTAL");
+    if (!total) return res.status(404).json({ error: "standings not found" });
+    const table = total.table.map((entry) => ({
+      position: entry.position,
+      teamId: entry.team.id,
+      teamName: entry.team.name,
+      shortName: entry.team.shortName,
+      tla: entry.team.tla,
+      crest: entry.team.crest,
+      playedGames: entry.playedGames,
+      won: entry.won,
+      draw: entry.draw,
+      lost: entry.lost,
+      points: entry.points,
+      goalsFor: entry.goalsFor,
+      goalsAgainst: entry.goalsAgainst,
+      goalDifference: entry.goalDifference,
+    }));
+    res.json({
+      season: 2025,
+      currentMatchday: data?.season?.currentMatchday ?? null,
+      table,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "failed to fetch ligue1 standings" });
+  }
+});
+
+// ===============================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
