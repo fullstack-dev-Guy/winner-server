@@ -380,6 +380,60 @@ app.get("/api/seriea/standings", async (req, res) => {
 });
 
 // ===============================
+// 🇩🇪 BUNDESLIGA — Matches
+// ===============================
+app.get("/api/bundesliga/matches", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://api.football-data.org/v4/competitions/BL1/matches?season=2025",
+      { headers: { "X-Auth-Token": API_KEY } },
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "failed to fetch bundesliga matches" });
+  }
+});
+
+// ===============================
+// 🇩🇪 BUNDESLIGA — Standings
+// ===============================
+app.get("/api/bundesliga/standings", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://api.football-data.org/v4/competitions/BL1/standings?season=2025",
+      { headers: { "X-Auth-Token": API_KEY } },
+    );
+    const data = await response.json();
+    const total = data?.standings?.find((s) => s.type === "TOTAL");
+    if (!total) return res.status(404).json({ error: "standings not found" });
+    const table = total.table.map((entry) => ({
+      position: entry.position,
+      teamId: entry.team.id,
+      teamName: entry.team.name,
+      shortName: entry.team.shortName,
+      tla: entry.team.tla,
+      crest: entry.team.crest,
+      playedGames: entry.playedGames,
+      won: entry.won,
+      draw: entry.draw,
+      lost: entry.lost,
+      points: entry.points,
+      goalsFor: entry.goalsFor,
+      goalsAgainst: entry.goalsAgainst,
+      goalDifference: entry.goalDifference,
+    }));
+    res.json({
+      season: 2025,
+      currentMatchday: data?.season?.currentMatchday ?? null,
+      table,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "failed to fetch bundesliga standings" });
+  }
+});
+
+// ===============================
 // Helper — עיבוד שחקני API-Football
 // ===============================
 function processApiFootballPlayers(response) {
