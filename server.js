@@ -254,31 +254,25 @@ app.get("/api/laliga/standings", async (req, res) => {
 
 // ===============================
 // 🇪🇸 LA LIGA — Players (עמוד אחד)
-// GET /api/laliga/players?page=1
 // ===============================
 app.get("/api/laliga/players", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const response = await fetch(
-      `https://v3.football.api-sports.io/players?league=140&season=2025&page=${page}`,
+      `https://v3.football.api-sports.io/players?league=140&season=2024&page=${page}`,
       { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
     );
     const data = await response.json();
-
-    if (!data.response) {
+    if (!data.response)
       return res
         .status(500)
         .json({ error: "API-Football error", details: data });
-    }
-
-    const players = processApiFootballPlayers(data.response);
-
     res.json({
       fetchedAt: new Date().toISOString(),
       page: data.paging?.current || page,
       totalPages: data.paging?.total || 1,
-      totalPlayers: data.results || players.length,
-      players,
+      totalPlayers: data.results || 0,
+      players: processApiFootballPlayers(data.response),
     });
   } catch (err) {
     res
@@ -288,57 +282,100 @@ app.get("/api/laliga/players", async (req, res) => {
 });
 
 // ===============================
-// 🇪🇸 LA LIGA — All Players (כל העמודים)
-// GET /api/laliga/players/all
-// ⚠️ משתמש בהרבה קריאות API — רק בפעם הראשונה!
+// 🇪🇸 LA LIGA — All Players
 // ===============================
 app.get("/api/laliga/players/all", async (req, res) => {
   try {
-    // עמוד ראשון
     const firstResponse = await fetch(
-      "https://v3.football.api-sports.io/players?league=140&season=2025&page=1",
+      "https://v3.football.api-sports.io/players?league=140&season=2024&page=1",
       { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
     );
     const firstData = await firstResponse.json();
-
-    if (!firstData.response) {
+    if (!firstData.response)
       return res
         .status(500)
         .json({ error: "API-Football error", details: firstData });
-    }
-
     const totalPages = firstData.paging?.total || 1;
-    console.log(`La Liga: ${totalPages} pages to fetch`);
-
     let allPlayers = processApiFootballPlayers(firstData.response);
-
-    // שאר העמודים
     for (let page = 2; page <= totalPages; page++) {
-      await new Promise((resolve) => setTimeout(resolve, 250)); // 250ms delay
+      await new Promise((resolve) => setTimeout(resolve, 250));
       const pageResponse = await fetch(
-        `https://v3.football.api-sports.io/players?league=140&season=2025&page=${page}`,
+        `https://v3.football.api-sports.io/players?league=140&season=2024&page=${page}`,
         { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
       );
       const pageData = await pageResponse.json();
-      if (pageData.response) {
+      if (pageData.response)
         allPlayers = [
           ...allPlayers,
           ...processApiFootballPlayers(pageData.response),
         ];
-        console.log(`Page ${page}/${totalPages} — total: ${allPlayers.length}`);
-      }
     }
-
     res.json({
       fetchedAt: new Date().toISOString(),
       totalPlayers: allPlayers.length,
       players: allPlayers,
     });
   } catch (err) {
-    res.status(500).json({
-      error: "failed to fetch all laliga players",
-      details: err.message,
+    res
+      .status(500)
+      .json({
+        error: "failed to fetch all laliga players",
+        details: err.message,
+      });
+  }
+});
+
+// ===============================
+// 🇮🇹 SERIE A — Matches
+// ===============================
+app.get("/api/seriea/matches", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://api.football-data.org/v4/competitions/SA/matches?season=2025",
+      { headers: { "X-Auth-Token": API_KEY } },
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "failed to fetch seriea matches" });
+  }
+});
+
+// ===============================
+// 🇮🇹 SERIE A — Standings
+// ===============================
+app.get("/api/seriea/standings", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://api.football-data.org/v4/competitions/SA/standings?season=2025",
+      { headers: { "X-Auth-Token": API_KEY } },
+    );
+    const data = await response.json();
+    const total = data?.standings?.find((s) => s.type === "TOTAL");
+    if (!total) return res.status(404).json({ error: "standings not found" });
+    const table = total.table.map((entry) => ({
+      position: entry.position,
+      teamId: entry.team.id,
+      teamName: entry.team.name,
+      shortName: entry.team.shortName,
+      tla: entry.team.tla,
+      crest: entry.team.crest,
+      playedGames: entry.playedGames,
+      won: entry.won,
+      draw: entry.draw,
+      lost: entry.lost,
+      points: entry.points,
+      goalsFor: entry.goalsFor,
+      goalsAgainst: entry.goalsAgainst,
+      goalDifference: entry.goalDifference,
+    }));
+    res.json({
+      season: 2025,
+      currentMatchday: data?.season?.currentMatchday ?? null,
+      table,
     });
+  } catch (err) {
+    res.status(500).json({ error: "failed to fetch seriea standings" });
   }
 });
 
@@ -352,14 +389,12 @@ function processApiFootballPlayers(response) {
     Midfielder: "MID",
     Attacker: "FWD",
   };
-
   return response.map((item) => {
     const p = item.player;
     const stats = item.statistics?.[0] ?? {};
     const appearances = stats.games?.appearences || 0;
     const goals = stats.goals?.total || 0;
     const assists = stats.goals?.assists || 0;
-
     return {
       id: p.id,
       fullName: p.name,
@@ -396,11 +431,11 @@ app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
 });
 
-// DEBUG — raw API-Football response
+// DEBUG
 app.get("/api/debug/laliga-players", async (req, res) => {
   try {
     const response = await fetch(
-      "https://v3.football.api-sports.io/players?league=140&season=2025&page=1",
+      "https://v3.football.api-sports.io/players?league=140&season=2024&page=1",
       { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
     );
     const data = await response.json();
