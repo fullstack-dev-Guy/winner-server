@@ -316,12 +316,10 @@ app.get("/api/laliga/players/all", async (req, res) => {
       players: allPlayers,
     });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        error: "failed to fetch all laliga players",
-        details: err.message,
-      });
+    res.status(500).json({
+      error: "failed to fetch all laliga players",
+      details: err.message,
+    });
   }
 });
 
