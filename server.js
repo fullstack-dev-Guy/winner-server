@@ -252,76 +252,76 @@ app.get("/api/laliga/standings", async (req, res) => {
   }
 });
 
-// ===============================
-// 🇪🇸 LA LIGA — Players (עמוד אחד)
-// ===============================
-app.get("/api/laliga/players", async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const response = await fetch(
-      `https://v3.football.api-sports.io/players?league=140&season=2024&page=${page}`,
-      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
-    );
-    const data = await response.json();
-    if (!data.response)
-      return res
-        .status(500)
-        .json({ error: "API-Football error", details: data });
-    res.json({
-      fetchedAt: new Date().toISOString(),
-      page: data.paging?.current || page,
-      totalPages: data.paging?.total || 1,
-      totalPlayers: data.results || 0,
-      players: processApiFootballPlayers(data.response),
-    });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ error: "failed to fetch laliga players", details: err.message });
-  }
-});
-
-// ===============================
-// 🇪🇸 LA LIGA — All Players
-// ===============================
-app.get("/api/laliga/players/all", async (req, res) => {
-  try {
-    const firstResponse = await fetch(
-      "https://v3.football.api-sports.io/players?league=140&season=2024&page=1",
-      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
-    );
-    const firstData = await firstResponse.json();
-    if (!firstData.response)
-      return res
-        .status(500)
-        .json({ error: "API-Football error", details: firstData });
-    const totalPages = firstData.paging?.total || 1;
-    let allPlayers = processApiFootballPlayers(firstData.response);
-    for (let page = 2; page <= totalPages; page++) {
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      const pageResponse = await fetch(
-        `https://v3.football.api-sports.io/players?league=140&season=2024&page=${page}`,
-        { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
-      );
-      const pageData = await pageResponse.json();
-      if (pageData.response)
-        allPlayers = [
-          ...allPlayers,
-          ...processApiFootballPlayers(pageData.response),
-        ];
-    }
-    res.json({
-      fetchedAt: new Date().toISOString(),
-      totalPlayers: allPlayers.length,
-      players: allPlayers,
-    });
-  } catch (err) {
-    res.status(500).json({
-      error: "failed to fetch all laliga players",
-      details: err.message,
-    });
-  }
-});
+//// ===============================
+//// 🇪🇸 LA LIGA — Players (עמוד אחד)
+//// ===============================
+//app.get("/api/laliga/players", async (req, res) => {
+//  try {
+//    const page = parseInt(req.query.page) || 1;
+//    const response = await fetch(
+//      `https://v3.football.api-sports.io/players?league=140&season=2024&page=${page}`,
+//      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
+//    );
+//    const data = await response.json();
+//    if (!data.response)
+//      return res
+//        .status(500)
+//        .json({ error: "API-Football error", details: data });
+//    res.json({
+//      fetchedAt: new Date().toISOString(),
+//      page: data.paging?.current || page,
+//      totalPages: data.paging?.total || 1,
+//      totalPlayers: data.results || 0,
+//      players: processApiFootballPlayers(data.response),
+//    });
+//  } catch (err) {
+//    res
+//      .status(500)
+//      .json({ error: "failed to fetch laliga players", details: err.message });
+//  }
+//});
+//
+//// ===============================
+//// 🇪🇸 LA LIGA — All Players
+//// ===============================
+//app.get("/api/laliga/players/all", async (req, res) => {
+//  try {
+//    const firstResponse = await fetch(
+//      "https://v3.football.api-sports.io/players?league=140&season=2024&page=1",
+//      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
+//    );
+//    const firstData = await firstResponse.json();
+//    if (!firstData.response)
+//      return res
+//        .status(500)
+//        .json({ error: "API-Football error", details: firstData });
+//    const totalPages = firstData.paging?.total || 1;
+//    let allPlayers = processApiFootballPlayers(firstData.response);
+//    for (let page = 2; page <= totalPages; page++) {
+//      await new Promise((resolve) => setTimeout(resolve, 250));
+//      const pageResponse = await fetch(
+//        `https://v3.football.api-sports.io/players?league=140&season=2024&page=${page}`,
+//        { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
+//      );
+//      const pageData = await pageResponse.json();
+//      if (pageData.response)
+//        allPlayers = [
+//          ...allPlayers,
+//          ...processApiFootballPlayers(pageData.response),
+//        ];
+//    }
+//    res.json({
+//      fetchedAt: new Date().toISOString(),
+//      totalPlayers: allPlayers.length,
+//      players: allPlayers,
+//    });
+//  } catch (err) {
+//    res.status(500).json({
+//      error: "failed to fetch all laliga players",
+//      details: err.message,
+//    });
+//  }
+//});
 
 // ===============================
 // 🇮🇹 SERIE A — Matches
