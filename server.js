@@ -223,9 +223,25 @@ app.get("/api/laliga/standings", async (req, res) => {
       "https://api.football-data.org/v4/competitions/PD/standings?season=2025",
       { headers: { "X-Auth-Token": API_KEY } },
     );
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("API ERROR:", text);
+      return res.status(response.status).json({ error: text });
+    }
+
     const data = await response.json();
-    const total = data?.standings?.find((s) => s.type === "TOTAL");
-    if (!total) return res.status(404).json({ error: "standings not found" });
+
+    if (!data?.standings) {
+      return res.status(500).json({ error: "invalid api response" });
+    }
+
+    const total = data.standings.find((s) => s.type === "TOTAL");
+
+    if (!total) {
+      return res.status(404).json({ error: "standings not found" });
+    }
+
     const table = total.table.map((entry) => ({
       position: entry.position,
       teamId: entry.team.id,
@@ -242,12 +258,14 @@ app.get("/api/laliga/standings", async (req, res) => {
       goalsAgainst: entry.goalsAgainst,
       goalDifference: entry.goalDifference,
     }));
+
     res.json({
-      season: 2024,
+      season: data?.season?.year ?? null,
       currentMatchday: data?.season?.currentMatchday ?? null,
       table,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "failed to fetch laliga standings" });
   }
 });
@@ -531,22 +549,22 @@ app.get("/api/ligue1/standings", async (req, res) => {
   }
 });
 
-// ===============================
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
-
-// DEBUG
-app.get("/api/debug/laliga-players", async (req, res) => {
-  try {
-    const response = await fetch(
-      "https://v3.football.api-sports.io/players?league=140&season=2024&page=1",
-      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
-    );
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+//// ===============================
+//const PORT = process.env.PORT || 5000;
+//app.listen(PORT, () => {
+//  console.log("Server running on port " + PORT);
+//});
+//
+//// DEBUG
+//app.get("/api/debug/laliga-players", async (req, res) => {
+//  try {
+//    const response = await fetch(
+//      "https://v3.football.api-sports.io/players?league=140&season=2024&page=1",
+//      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
+//    );
+//    const data = await response.json();
+//    res.json(data);
+//  } catch (err) {
+//    res.status(500).json({ error: err.message });
+//  }
+//});
