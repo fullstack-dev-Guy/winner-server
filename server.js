@@ -250,13 +250,15 @@ app.get("/api/laliga/standings", async (req, res) => {
       goalsAgainst: entry.goalsAgainst,
       goalDifference: entry.goalDifference,
     }));
-    res.json({
-      season: 2025,
-      currentMatchday: data?.season?.currentMatchday ?? null,
-      table,
-    });
+    //res.json({
+    //  season: 2025,
+    //  currentMatchday: data?.season?.currentMatchday ?? null,
+    //  table,
+    //});
+    res.json({ status: response.status, data }); // ← שנה זאת זמנית
   } catch (err) {
-    res.status(500).json({ error: "failed to fetch laliga standings" });
+    //res.status(500).json({ error: "failed to fetch laliga standings" });
+    res.status(500).json({ error: err.message }); // ← וזאת
   }
 });
 
