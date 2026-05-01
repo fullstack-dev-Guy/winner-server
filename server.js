@@ -11,6 +11,14 @@ app.use(cors());
 const API_KEY = process.env.VITE_FOOTBALL_API_KEY;
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY;
 
+app.get("/api/debug/key", async (req, res) => {
+  res.json({
+    keyExists: !!API_KEY,
+    keyLength: API_KEY?.length || 0,
+    keyStart: API_KEY?.substring(0, 4) || "empty",
+  });
+});
+
 // ===============================
 // 🏆 PL Matches
 // ===============================
