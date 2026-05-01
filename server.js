@@ -204,37 +204,16 @@ app.get("/api/fpl-player/:playerId", async (req, res) => {
 app.get("/api/laliga/matches", async (req, res) => {
   try {
     const response = await fetch(
-      "https://v3.football.api-sports.io/fixtures?league=140&season=2024&timezone=Europe/Madrid",
-      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
+      "https://api.football-data.org/v4/competitions/PD/matches?season=2025",
+      { headers: { "X-Auth-Token": API_KEY } },
     );
     const data = await response.json();
-    if (!data.response) return res.status(500).json({ error: "API error" });
-    const matches = data.response.map((item) => ({
-      id: item.fixture.id,
-      utcDate: item.fixture.date,
-      matchday: parseInt(item.league.round?.replace(/\D/g, "") || "0"),
-      homeTeam: { name: item.teams.home.name },
-      awayTeam: { name: item.teams.away.name },
-      score: { fullTime: { home: item.goals.home, away: item.goals.away } },
-    }));
-    res.json({ matches });
+    res.json(data);
   } catch (err) {
     res.status(500).json({ error: "failed to fetch laliga matches" });
   }
 });
 
-app.get("/api/debug/season2025", async (req, res) => {
-  try {
-    const response = await fetch(
-      "https://v3.football.api-sports.io/fixtures?league=140&season=2025&timezone=Europe/Madrid&from=2025-08-01&to=2025-08-10",
-      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
-    );
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 // ===============================
 // 🇪🇸 LA LIGA — Standings
 // ===============================
