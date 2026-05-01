@@ -223,6 +223,18 @@ app.get("/api/laliga/matches", async (req, res) => {
   }
 });
 
+app.get("/api/debug/season2025", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://v3.football.api-sports.io/fixtures?league=140&season=2025&timezone=Europe/Madrid&from=2025-08-01&to=2025-08-10",
+      { headers: { "x-apisports-key": API_FOOTBALL_KEY } },
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // ===============================
 // 🇪🇸 LA LIGA — Standings
 // ===============================
