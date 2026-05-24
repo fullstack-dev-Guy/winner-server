@@ -22,10 +22,12 @@ app.get("/api/debug/key", async (req, res) => {
 // ===============================
 // 🏆 PL Matches
 // ===============================
+// PL
 app.get("/api/matches", async (req, res) => {
+  const season = req.query.season || "2025";
   try {
     const response = await fetch(
-      "https://api.football-data.org/v4/competitions/PL/matches?season=2025",
+      `https://api.football-data.org/v4/competitions/PL/matches?season=${season}`,
       { headers: { "X-Auth-Token": API_KEY } },
     );
     const data = await response.json();
@@ -209,10 +211,12 @@ app.get("/api/fpl-player/:playerId", async (req, res) => {
 // ===============================
 // 🇪🇸 LA LIGA — Matches
 // ===============================
+// LA LIGA
 app.get("/api/laliga/matches", async (req, res) => {
+  const season = req.query.season || "2025";
   try {
     const response = await fetch(
-      "https://api.football-data.org/v4/competitions/PD/matches?season=2025",
+      `https://api.football-data.org/v4/competitions/PD/matches?season=${season}`,
       { headers: { "X-Auth-Token": API_KEY } },
     );
     const data = await response.json();
@@ -336,10 +340,12 @@ app.get("/api/laliga/players/all", async (req, res) => {
 // ===============================
 // 🇮🇹 SERIE A — Matches
 // ===============================
+// SERIE A
 app.get("/api/seriea/matches", async (req, res) => {
+  const season = req.query.season || "2025";
   try {
     const response = await fetch(
-      "https://api.football-data.org/v4/competitions/SA/matches?season=2025",
+      `https://api.football-data.org/v4/competitions/SA/matches?season=${season}`,
       { headers: { "X-Auth-Token": API_KEY } },
     );
     const data = await response.json();
@@ -390,10 +396,12 @@ app.get("/api/seriea/standings", async (req, res) => {
 // ===============================
 // 🇩🇪 BUNDESLIGA — Matches
 // ===============================
+// BUNDESLIGA
 app.get("/api/bundesliga/matches", async (req, res) => {
+  const season = req.query.season || "2025";
   try {
     const response = await fetch(
-      "https://api.football-data.org/v4/competitions/BL1/matches?season=2025",
+      `https://api.football-data.org/v4/competitions/BL1/matches?season=${season}`,
       { headers: { "X-Auth-Token": API_KEY } },
     );
     const data = await response.json();
@@ -490,10 +498,12 @@ function processApiFootballPlayers(response) {
 // ===============================
 // 🇫🇷 LIGUE 1 — Matches
 // ===============================
+// LIGUE 1
 app.get("/api/ligue1/matches", async (req, res) => {
+  const season = req.query.season || "2025";
   try {
     const response = await fetch(
-      "https://api.football-data.org/v4/competitions/FL1/matches?season=2025",
+      `https://api.football-data.org/v4/competitions/FL1/matches?season=${season}`,
       { headers: { "X-Auth-Token": API_KEY } },
     );
     const data = await response.json();
@@ -538,6 +548,61 @@ app.get("/api/ligue1/standings", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: "failed to fetch ligue1 standings" });
+  }
+});
+
+// ===============================
+// 🇧🇷 BRASILEIRÃO — Matches
+// ===============================
+// BRASILEIRAO
+app.get("/api/brasileirao/matches", async (req, res) => {
+  const season = req.query.season || "2025";
+  try {
+    const response = await fetch(
+      `https://api.football-data.org/v4/competitions/BSA/matches?season=${season}`,
+      { headers: { "X-Auth-Token": API_KEY } },
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "failed to fetch brasileirao matches" });
+  }
+});
+
+// ===============================
+// 🇧🇷 BRASILEIRÃO — Standings
+// ===============================
+app.get("/api/brasileirao/standings", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://api.football-data.org/v4/competitions/BSA/standings?season=2025",
+      { headers: { "X-Auth-Token": API_KEY } },
+    );
+    const data = await response.json();
+    const total = data?.standings?.find((s) => s.type === "TOTAL");
+    if (!total) return res.status(404).json({ error: "standings not found" });
+    const table = total.table.map((entry) => ({
+      position: entry.position,
+      teamId: entry.team.id,
+      teamName: entry.team.name,
+      shortName: entry.team.shortName,
+      tla: entry.team.tla,
+      playedGames: entry.playedGames,
+      won: entry.won,
+      draw: entry.draw,
+      lost: entry.lost,
+      points: entry.points,
+      goalsFor: entry.goalsFor,
+      goalsAgainst: entry.goalsAgainst,
+      goalDifference: entry.goalDifference,
+    }));
+    res.json({
+      season: 2025,
+      currentMatchday: data?.season?.currentMatchday ?? null,
+      table,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "failed to fetch brasileirao standings" });
   }
 });
 
