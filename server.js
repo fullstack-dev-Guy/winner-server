@@ -7,7 +7,7 @@ dotenv.config();
 
 const app = express();
 
-// ── תיקון CORS — מרשה scores16.onrender.com ואת localhost ──
+//// ── תיקון CORS — מרשה scores16.onrender.com ואת localhost ──
 app.use(
   cors({
     origin: [
