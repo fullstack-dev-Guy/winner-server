@@ -19,7 +19,7 @@ app.use(
     methods: ["GET", "POST", "OPTIONS"],
   }),
 );
-app.options("*", cors());
+app.options("(.*)", cors());
 
 const API_KEY = process.env.VITE_FOOTBALL_API_KEY;
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY;
