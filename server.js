@@ -6,7 +6,20 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// ── תיקון CORS — מרשה scores16.onrender.com ואת localhost ──
+app.use(
+  cors({
+    origin: [
+      "https://scores16.onrender.com",
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://localhost:4173",
+    ],
+    methods: ["GET", "POST", "OPTIONS"],
+  }),
+);
+app.options("*", cors());
 
 const API_KEY = process.env.VITE_FOOTBALL_API_KEY;
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY;
@@ -254,15 +267,13 @@ app.get("/api/laliga/standings", async (req, res) => {
       goalsAgainst: entry.goalsAgainst,
       goalDifference: entry.goalDifference,
     }));
-    //res.json({
-    //  season: 2025,
-    //  currentMatchday: data?.season?.currentMatchday ?? null,
-    //  table,
-    //});
-    res.json({ status: response.status, data }); // ← שנה זאת זמנית
+    res.json({
+      season: 2025,
+      currentMatchday: data?.season?.currentMatchday ?? null,
+      table,
+    });
   } catch (err) {
-    //res.status(500).json({ error: "failed to fetch laliga standings" });
-    res.status(500).json({ error: err.message }); // ← וזאת
+    res.status(500).json({ error: err.message });
   }
 });
 
